@@ -2,6 +2,7 @@ package io.atomofiron.estimoji.screen.auth
 
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
+import app.atomofiron.common.util.LateinitLiveData
 import io.atomofiron.estimoji.log
 import io.atomofiron.estimoji.screen.base.BaseViewModel
 import io.atomofiron.estimoji.util.Util
@@ -9,16 +10,16 @@ import io.atomofiron.estimoji.util.Util
 class AuthViewModel(app: Application) : BaseViewModel<AuthRouter>(app) {
     override val router = AuthRouter()
 
-    val nickname = MutableLiveData<String>("")
-    val ipJoin = MutableLiveData<String>("")
+    val nickname = LateinitLiveData("")
+    val ipJoin = LateinitLiveData("")
 
-    fun onCreateClick() = router.startPokerScreen()
+    fun onCreateClick() = router.startPokerScreen(nickname.value)
 
     fun onNicknameInput(nickname: String) {
         this.nickname.value = nickname
     }
 
-    fun onIpInput(ip: String?) {
+    fun onIpInput(ip: String) {
         // todo
         log("onIpInput ip: $ip")
         ipJoin.value = ip
@@ -26,7 +27,7 @@ class AuthViewModel(app: Application) : BaseViewModel<AuthRouter>(app) {
 
     fun onScanClick() = router.startScanScreen()
 
-    fun onJoinClick() = router.startPokerScreen()
+    fun onJoinClick() = router.startPokerScreen(nickname.value, ipJoin.value)
 
     fun onCardsClick() = router.startCardsScreen()
 

@@ -1,8 +1,6 @@
 package io.atomofiron.estimoji.screen.base
 
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -11,12 +9,11 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import app.atomofiron.common.util.setOneTimeBackStackListener
 import io.atomofiron.estimoji.R
-import io.atomofiron.estimoji.log
+import io.atomofiron.estimoji.logD
+import io.atomofiron.estimoji.logE
 import io.atomofiron.estimoji.logI
 import io.atomofiron.estimoji.screen.base.util.OneTimeBackStackListener
-import io.atomofiron.estimoji.view.BlockFrameLayout
 import java.lang.ref.WeakReference
-import kotlin.reflect.KClass
 
 abstract class BaseRouter {
     private lateinit var fragmentReference: WeakReference<Fragment?>
@@ -35,7 +32,7 @@ abstract class BaseRouter {
             return arguments!!
         }
 
-    protected open var fragmentContainerId: Int = 0
+    protected open var fragmentContainerId: Int = R.id.root_fl_container
         get() {
             if (field == 0) {
                 field = (fragment!!.requireView().parent as View).id
@@ -78,21 +75,29 @@ abstract class BaseRouter {
         }
     }
 
-    protected fun startScreen(fragment: Fragment, addToBackStack: Boolean = true, runOnCommit: (() -> Unit)? = null) {
+    protected fun startScreen(fragment: Fragment, vararg fragments: Fragment, addToBackStack: Boolean = true, runOnCommit: (() -> Unit)? = null) {
         if (isDestroyed || isBlocked) {
             return
         }
+        val uncheckedFragments = fragments.toMutableList()
+        uncheckedFragments.add(0, fragment)
         manager {
-            val validFragment = filterAddedFragments(this, fragment)
-            validFragment ?: return@manager
+            val validFragments = filterAddedFragments(this, uncheckedFragments)
+            if (validFragments.isEmpty()) {
+                logE("No fragments to add!")
+                return@manager
+            }
             isBlocked = true
-            val current = fragments.find { !it.isHidden }
+            val current = this.fragments.find { !it.isHidden }
+            logD("startScreen current ${current?.javaClass?.simpleName}")
             beginTransaction().apply {
                 setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 if (current != null) {
                     hide(current)
                 }
-                add(fragmentContainerId, validFragment, validFragment.javaClass.simpleName)
+                for (validFragment in validFragments) {
+                    add(fragmentContainerId, validFragment, validFragment.javaClass.simpleName)
+                }
                 if (addToBackStack) {
                     addToBackStack(null)
                     OneTimeBackStackListener(this@manager) {
@@ -110,13 +115,15 @@ abstract class BaseRouter {
         }
     }
 
-    private fun filterAddedFragments(manager: FragmentManager, fragment: Fragment): Fragment? {
-        val tag = fragment.javaClass.simpleName
-        return when (manager.fragments.find { added -> added.tag == tag } == null) {
-            true -> fragment
-            else -> {
-                logI("Fragment with tag = $tag is already added!")
-                null
+    private fun filterAddedFragments(manager: FragmentManager, fragments: List<Fragment>): List<Fragment> {
+        return fragments.filter {
+            val tag = it.javaClass.simpleName
+            when (manager.fragments.find { added -> added.tag == tag } == null) {
+                true -> true
+                else -> {
+                    logI("Fragment with tag = $tag is already added!")
+                    false
+                }
             }
         }
     }
@@ -127,6 +134,7 @@ abstract class BaseRouter {
         }
         manager {
             val current = fragments.find { !it.isHidden }!!
+            logD("switchScreen current ${current.javaClass.simpleName}")
             if (predicate(current)) {
                 return@manager
             }

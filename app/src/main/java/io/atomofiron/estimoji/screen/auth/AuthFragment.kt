@@ -87,7 +87,7 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
         })
         viewModel.ipJoin.observe(owner, Observer {
             etJoin {
-                if (it != null && it.toString() != text.toString()) {
+                if (it != text.toString()) {
                     setText(it)
                 }
             }
@@ -110,7 +110,7 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
     }
 
     private inner class JoinAddressWatcher : TextWatcher {
-        var value: String? = null
+        var value: String = ""
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
@@ -119,7 +119,7 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
             val matcher = Util.patternIpPort.matcher(after)
             val matches = matcher.matches()
             setJoinButtonVisibility(matches)
-            value = if (matches) after else null
+            value = if (matches) after else ""
             viewModel.onIpInput(value)
         }
     }

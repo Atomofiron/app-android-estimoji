@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,6 +27,19 @@ import io.atomofiron.estimoji.util.findResIdByAttr
 import kotlin.reflect.KClass
 
 class PokerFragment : BaseFragment<PokerViewModel>() {
+    companion object {
+        const val KEY_CONNECTION = "KEY_CONNECTION"
+        const val KEY_NICKNAME = "KEY_NICKNAME"
+
+        fun create(nickname: String, connection: String = ""): Fragment {
+            val bundle = Bundle()
+            bundle.putString(KEY_CONNECTION, connection)
+            bundle.putString(KEY_NICKNAME, nickname)
+            val fragment = PokerFragment()
+            fragment.arguments = bundle
+            return fragment
+        }
+    }
 
     override val viewModelClass: KClass<PokerViewModel> = PokerViewModel::class
     override val layoutId: Int = R.layout.fragment_poker
