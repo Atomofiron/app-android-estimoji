@@ -34,10 +34,10 @@ class PokerViewModel(app: Application) : BaseViewModel<PokerRouter>(app) {
 
     fun onCardsClick() = router.startCardsScreen()
 
-    fun onExitClick() = router.closeScreen()
+    fun onExitClick() = router.popScreen()
 
     fun onSettingsClick() {
         Util.isDarkTheme = !Util.isDarkTheme
-        router.recreateActivity()
+        router.reattachFragments()
     }
 }

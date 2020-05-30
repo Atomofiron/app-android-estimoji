@@ -9,8 +9,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import app.atomofiron.common.util.setOneTimeBackStackListener
 import io.atomofiron.estimoji.R
 import io.atomofiron.estimoji.log
+import io.atomofiron.estimoji.logI
 import io.atomofiron.estimoji.screen.base.util.OneTimeBackStackListener
 import io.atomofiron.estimoji.view.BlockFrameLayout
 import java.lang.ref.WeakReference
@@ -22,46 +24,33 @@ abstract class BaseRouter {
 
     protected val fragment: Fragment? get() = fragmentReference.get()
     protected val activity: AppCompatActivity? get() = activityReference.get()
-    protected val isDestroyed: Boolean get() =  fragment == null && activity == null
+
+    protected val isDestroyed: Boolean get() = fragment == null && activity == null
     protected var isBlocked = false
 
-    protected val arguments: Bundle get() {
-        var arguments = fragmentReference.get()?.arguments
-        arguments = arguments ?: activityReference.get()?.intent?.extras
-        return arguments!!
-    }
+    protected val arguments: Bundle
+        get() {
+            var arguments = fragment?.arguments
+            arguments = arguments ?: activity?.intent?.extras
+            return arguments!!
+        }
 
-    protected open val indexFromEnd: Int = 0
-    protected open var screenBlockerId: Int = R.id.root_bfl
     protected open var fragmentContainerId: Int = 0
         get() {
             if (field == 0) {
-                field = (fragment!!.view!!.parent as View).id
+                field = (fragment!!.requireView().parent as View).id
             }
             return field
         }
 
-    protected fun context(action: Context.() -> Unit) = activityReference.get()!!.action()
-    protected fun fragment(action: Fragment.() -> Unit) = fragmentReference.get()!!.action()
-    protected fun activity(action: AppCompatActivity.() -> Unit) = activityReference.get()!!.action()
-    protected fun childManager(action: FragmentManager.() -> Unit) {
-        var manager = fragmentReference.get()?.childFragmentManager
-        manager = manager ?: activityReference.get()?.supportFragmentManager
-        manager!!.action()
-    }
-    protected fun manager(action: FragmentManager.() -> Unit) {
-        var manager = fragmentReference.get()?.fragmentManager
-        manager = manager ?: activityReference.get()?.supportFragmentManager
-        manager!!.action()
+    protected fun <R> context(action: Context.() -> R): R = activity!!.action()
+    protected fun <R> fragment(action: Fragment.() -> R): R = fragment!!.action()
+    protected fun <R> activity(action: AppCompatActivity.() -> R): R = activity!!.action()
+    protected fun <R> manager(action: FragmentManager.() -> R): R {
+        return activity!!.supportFragmentManager.action()
     }
 
-    protected fun nextIntent(clazz: KClass<out Activity>): Intent {
-        var intent: Intent? = null
-        context {
-            intent = Intent(this, clazz.java)
-        }
-        return intent!!
-    }
+    open fun onAttachChildFragment(childFragment: Fragment) = Unit
 
     fun onFragmentAttach(fragment: Fragment) {
         fragmentReference = WeakReference(fragment)
@@ -74,42 +63,28 @@ abstract class BaseRouter {
     }
 
     fun onViewDestroy() {
-        fragmentReference.clear()
-        activityReference.clear()
+        // nothing?
     }
 
-    fun recreateActivity() {
-        val activity = activity ?: fragment!!.activity!!
-        activity.recreate()
-    }
-
-    private fun blockUi(block: Boolean = true) {
-        val blocker = activity!!.findViewById<BlockFrameLayout>(screenBlockerId)
-        if (block) {
-            blocker?.block()
-        } else {
-            blocker?.unblock()
+    fun reattachFragments() {
+        manager {
+            val transaction = beginTransaction()
+            fragments.filterIsInstance<BaseFragment<*>>()
+                .forEach {
+                    transaction.detach(it)
+                    transaction.attach(it)
+                }
+            transaction.commit()
         }
     }
 
-    protected fun startScreen(vararg fragmentsArg: Fragment,
-                              addToBackStack: Boolean = true,
-                              runOnCommit: (() -> Unit)? = null) {
+    protected fun startScreen(fragment: Fragment, addToBackStack: Boolean = true, runOnCommit: (() -> Unit)? = null) {
         if (isDestroyed || isBlocked) {
-            log("isBlock...")
             return
         }
-        log("startScreen [0]: ${fragmentsArg[0]::class.java.simpleName}")
         manager {
-            val addedFragments = fragments.map { it::class }
-            if (fragment != null) {
-                val kClass = fragment!!::class
-                val indexFromEnd = addedFragments.lastIndex - addedFragments.indexOf(kClass)
-                if (indexFromEnd != this@BaseRouter.indexFromEnd) {
-                    log("${kClass.java.simpleName}'s indexFromEnd != indexFromEnd")
-                    return@manager
-                }
-            }
+            val validFragment = filterAddedFragments(this, fragment)
+            validFragment ?: return@manager
             isBlocked = true
             val current = fragments.find { !it.isHidden }
             beginTransaction().apply {
@@ -117,7 +92,7 @@ abstract class BaseRouter {
                 if (current != null) {
                     hide(current)
                 }
-                fragmentsArg.forEach { add(fragmentContainerId, it) }
+                add(fragmentContainerId, validFragment, validFragment.javaClass.simpleName)
                 if (addToBackStack) {
                     addToBackStack(null)
                     OneTimeBackStackListener(this@manager) {
@@ -135,9 +110,19 @@ abstract class BaseRouter {
         }
     }
 
+    private fun filterAddedFragments(manager: FragmentManager, fragment: Fragment): Fragment? {
+        val tag = fragment.javaClass.simpleName
+        return when (manager.fragments.find { added -> added.tag == tag } == null) {
+            true -> fragment
+            else -> {
+                logI("Fragment with tag = $tag is already added!")
+                null
+            }
+        }
+    }
+
     protected fun switchScreen(addToBackStack: Boolean = true, predicate: (Fragment) -> Boolean) {
         if (isDestroyed || isBlocked) {
-            log("isBlock...")
             return
         }
         manager {
@@ -166,26 +151,19 @@ abstract class BaseRouter {
         }
     }
 
-    fun closeScreen() {
-        if (isDestroyed) {
+    fun popScreen() {
+        if (isDestroyed || isBlocked) {
             return
         }
-        val fragment = fragment
-        val activity = activity
-
         manager {
-            onViewDestroy()
-            when {
-                fragment == null -> activity?.finish()
-                backStackEntryCount > 0 -> popBackStack()
-                fragments.size > 1 -> {
-                    beginTransaction().apply {
-                        remove(fragment)
-                        fragments.findLast { it !== fragment }?.let(::show)
-                        commit()
-                    }
-                }
+            if (backStackEntryCount == 0) {
+                return@manager
             }
+            isBlocked = true
+            setOneTimeBackStackListener {
+                isBlocked = false
+            }
+            popBackStack()
         }
     }
 }

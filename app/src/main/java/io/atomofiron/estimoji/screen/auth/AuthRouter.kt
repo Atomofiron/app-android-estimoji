@@ -8,8 +8,10 @@ import io.atomofiron.estimoji.screen.scan.ScanFragment
 class AuthRouter : BaseRouter() {
 
     fun startPokerScreen() {
-        startScreen(CardsFragment(), PokerFragment()) {
-            switchScreen(false) { it is PokerFragment }
+        startScreen(CardsFragment()) {
+            startScreen(PokerFragment()) {
+                switchScreen(false) { it is PokerFragment }
+            }
         }
     }
 

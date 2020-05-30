@@ -32,6 +32,6 @@ class AuthViewModel(app: Application) : BaseViewModel<AuthRouter>(app) {
 
     fun onSettingsClick() {
         Util.isDarkTheme = !Util.isDarkTheme
-        router.recreateActivity()
+        router.reattachFragments()
     }
 }

@@ -7,7 +7,7 @@ class CardViewModel(app: Application) : BaseViewModel<CardRouter>(app) {
     override val router = CardRouter()
 
     fun onOpenedCardClick(): Boolean {
-        router.closeScreen()
+        router.popScreen()
         return true // todo preferences
     }
 }

@@ -66,7 +66,6 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
         fabCards.view.setOnClickListener {
             viewModel.onCardsClick()
         }
-
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

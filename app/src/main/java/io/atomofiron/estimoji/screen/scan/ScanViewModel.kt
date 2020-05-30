@@ -19,7 +19,7 @@ class ScanViewModel(app: Application) : BaseViewModel<ScanRouter>(app) {
             // todo
         } else {
             provider!!.get(AuthViewModel::class.java).onIpInput(ip)
-            router.closeScreen()
+            router.popScreen()
         }
     }
 }
