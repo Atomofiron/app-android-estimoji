@@ -24,5 +24,7 @@ class App : Application() {
             .withCrashReporting(true)
             .build()
         YandexMetrica.activate(applicationContext, config)
+
+        assets
     }
 }

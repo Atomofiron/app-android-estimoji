@@ -7,6 +7,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.work.WorkManager
 import com.google.android.material.snackbar.Snackbar
 import app.atomofiron.estimoji.R
+import app.atomofiron.estimoji.injactable.channel.PublicChannel
 import app.atomofiron.estimoji.log
 import app.atomofiron.estimoji.screen.base.BaseActivity
 import app.atomofiron.estimoji.util.Knife
@@ -58,5 +59,17 @@ class RootActivity : BaseActivity<RootViewModel>() {
     private fun applyTheme() {
         val theme = if (Util.isDarkTheme) R.style.AppTheme_Activity_Dark else R.style.AppTheme
         setTheme(theme)
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        PublicChannel.appPaused.setAndNotify(true)
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        PublicChannel.appPaused.setAndNotify(false)
     }
 }

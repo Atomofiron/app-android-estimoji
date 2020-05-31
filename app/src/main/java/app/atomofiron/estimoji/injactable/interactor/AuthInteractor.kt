@@ -23,13 +23,13 @@ class AuthInteractor {
         continuation.enqueue()
     }
 
-    fun join(nickname: String, password: String, ipJoin: String, callback: (Operation.State) -> Unit) {
+    fun join(nickname: String, password: String, ipJoin: String) {
         val request = WebClientWorker.create(nickname, password, ipJoin)
         val continuation = workManager.beginUniqueWork(
             WebClientWorker.NAME,
             ExistingWorkPolicy.REPLACE,
             request
         )
-        continuation.enqueue().state.observeForever(callback)
+        continuation.enqueue()
     }
 }

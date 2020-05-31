@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="menu_settings">Настройки</string>
+    <string name="hint_nickname">Имя</string>
+    <string name="create">Создать</string>
+    <string name="join">Присоединиться</string>
+    <string name="host_ip">192.168.0.99</string>
+    <string name="menu_share">Поделиться</string>
+    <string name="menu_selfie">Selfie</string>
+
     <string name="turn_flashlight_on">Включить вспышку</string>
     <string name="turn_flashlight_off">Выключить вспышку</string>
-    <string name="hint_password">Password</string>
-    <string name="wrong_password">Wrong password!</string>
-    <string name="fuckng_wronj_password">Wrong password!</string>
-    <string name="are_you_shure">Are you sure?</string>
-    <string name="leave">Leave</string>
+    <string name="wrong_ip">IP не корректный</string>
+    <string name="join_to_another_session">Присоединииться к сессии?</string>
+    <string name="no">Нет</string>
+    <string name="yes">Да</string>
+    <string name="menu_edit">Редактировать</string>
+    <string name="menu_add">Добавить</string>
+    <string name="menu_confirm">Подтвердить</string>
+    <string name="menu_cancel">Отмена</string>
+    <string name="hint_password">Пароль</string>
+    <string name="wrong_password">Неверный пароль!</string>
+    <string name="are_you_shure">Вы уверены?</string>
+    <string name="leave">Покинуть</string>
     <string name="foreground_notification_name">Poker Session</string>
-    <string name="session_is_active">Session is active</string>
+    <string name="session_is_active">Сессия активна</string>
 </resources>

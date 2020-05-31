@@ -7,11 +7,14 @@ import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import app.atomofiron.common.util.KObservable
 import app.atomofiron.common.util.ServiceConnectionImpl
 import app.atomofiron.estimoji.android.ForegroundService
 import app.atomofiron.estimoji.injactable.channel.PublicChannel
 import app.atomofiron.estimoji.logD
 import app.atomofiron.estimoji.logE
+import app.atomofiron.estimoji.model.ConnectionState
+import app.atomofiron.estimoji.model.JsonClientFrame
 import app.atomofiron.estimoji.model.JsonServerFrame
 import app.atomofiron.estimoji.util.Const
 import io.ktor.client.HttpClient
@@ -58,6 +61,7 @@ class WebClientWorker(context: Context, workerParameters: WorkerParameters) : Wo
     }
 
     private val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    private val onClearedCallback = KObservable.RemoveObserverCallback()
 
     private val nickname = workerParameters.inputData.getString(KEY_NICKNAME)!!
     private val password = workerParameters.inputData.getString(KEY_PASSWORD)!!
@@ -69,12 +73,13 @@ class WebClientWorker(context: Context, workerParameters: WorkerParameters) : Wo
     private var result = Result.success()
     private val isActive: Boolean get() = (session?.isActive != false) && result is Result.Success
 
-    val connection = ServiceConnectionImpl()
+    private val connection = ServiceConnectionImpl()
 
     override fun onStopped() {
         super.onStopped()
         logD("onStopped")
         GlobalScope.launch {
+            session?.outgoing?.send(Frame.Text(JsonClientFrame.Leave().toJson()))
             close(CloseReason.Codes.GOING_AWAY)
         }
     }
@@ -94,12 +99,28 @@ class WebClientWorker(context: Context, workerParameters: WorkerParameters) : Wo
         GlobalScope.launch(block = ::connect)
 
         startForegroundService()
+        PublicChannel.appPaused.addObserver(onClearedCallback) {
+            GlobalScope.launch {
+                val frame = when {
+                    it -> JsonClientFrame.Sleep()
+                    else -> JsonClientFrame.Waking()
+                }
+                session?.outgoing?.send(Frame.Text(frame.toJson()))
+            }
+        }
+        PublicChannel.chose.addObserver(onClearedCallback) {
+            GlobalScope.launch {
+                logD("WTF $it")
+                session?.outgoing?.send(Frame.Text(JsonClientFrame.Chose(it).toJson()))
+            }
+        }
 
         while (!isStopped && isActive) {
             Thread.sleep(Const.CLIENT_SLEEP_PERIOD)
         }
 
         stopForegroundService()
+        onClearedCallback.invoke()
 
         logD("doWork end")
         return result
@@ -138,9 +159,48 @@ class WebClientWorker(context: Context, workerParameters: WorkerParameters) : Wo
     private fun onMessage(message: String) {
         val frame = JsonServerFrame.from(message)
         when (frame) {
-            is JsonServerFrame.Forbidden -> logD("Forbidden!!!")
-            is JsonServerFrame.Authorized -> logD("Authorized!!!")
-            is JsonServerFrame.Users -> logD("Users!!!")
+            is JsonServerFrame.Forbidden -> {
+                logD("---> Forbidden")
+                PublicChannel.connectionStatus.setAndNotify(ConnectionState.Forbidden)
+            }
+            is JsonServerFrame.Authorized -> {
+                logD("---> Authorized")
+                PublicChannel.connectionStatus.setAndNotify(ConnectionState.Authorized)
+            }
+            is JsonServerFrame.Users -> {
+                logD("---> Users")
+                PublicChannel.users.setAndNotify(frame.users)
+            }
+            is JsonServerFrame.UserJoin -> {
+                logD("---> UserJoin")
+                PublicChannel.users.updateAndNotify {
+                    it.toMutableList().apply { add(frame.user) }
+                }
+            }
+            is JsonServerFrame.UserUpdate -> {
+                logD("---> UserUpdate")
+                PublicChannel.users.updateAndNotify { users ->
+                    users.toMutableList().apply {
+                        val index = indexOf(frame.user)
+                        if (index == Const.UNKNOWN) {
+                            add(frame.user)
+                        } else {
+                            removeAt(index)
+                            logD("frame.user ${frame.user.chose}")
+                            add(index, frame.user)
+                        }
+                    }
+                }
+            }
+            is JsonServerFrame.UserLeave -> {
+                logD("---> UserLeave")
+                PublicChannel.users.updateAndNotify { users ->
+                    users.toMutableList().apply {
+                        val old = find { it.nickname == frame.nickname }
+                        remove(old)
+                    }
+                }
+            }
             else -> throw Exception("Unknown frame $frame!")
         }
     }

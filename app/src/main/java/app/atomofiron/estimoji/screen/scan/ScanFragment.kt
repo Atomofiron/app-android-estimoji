@@ -12,6 +12,7 @@ import com.google.zxing.client.android.BeepManager
 import com.google.zxing.client.android.Intents
 import com.journeyapps.barcodescanner.*
 import app.atomofiron.estimoji.R
+import app.atomofiron.estimoji.logD
 import app.atomofiron.estimoji.screen.base.BaseFragment
 import app.atomofiron.estimoji.util.Knife
 
@@ -122,14 +123,22 @@ class ScanFragment : BaseFragment<ScanViewModel>(), DecoratedBarcodeView.TorchLi
         override fun possibleResultPoints(resultPoints: List<ResultPoint>) = Unit
 
         override fun barcodeResult(result: BarcodeResult) {
+            logD("barcodeResult ${result.text}")
             when (lastResult) {
-                result.text -> return
-                else -> lastResult = result.text
+                result.text -> {
+                    logD("barcodeResult return")
+                    return
+                }
+                else -> {
+                    lastResult = result.text
+                    logD("NUUUUUUUU lastResult = result.text")
+                }
             }
 
             barcodeScannerView.view.setStatusText(result.text)
             beepManager.playBeepSound()
 
+            logD("onScanResult ????")
             viewModel.onScanResult(result.text)
         }
     }

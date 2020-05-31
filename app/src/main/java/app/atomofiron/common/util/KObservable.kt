@@ -40,6 +40,13 @@ open class KObservable<T : Any?>(private val single: Boolean = false) {
     }
 
     @Synchronized
+    fun updateAndNotify(action: (T) -> T) {
+        nullableValue = action(value)
+        changed = true
+        notifyObservers()
+    }
+
+    @Synchronized
     fun justNotify() {
         changed = true
         notifyObservers()

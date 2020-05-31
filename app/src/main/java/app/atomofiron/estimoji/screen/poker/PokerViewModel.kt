@@ -12,6 +12,7 @@ import app.atomofiron.estimoji.App
 import app.atomofiron.estimoji.R
 import app.atomofiron.estimoji.injactable.channel.PublicChannel
 import app.atomofiron.estimoji.logD
+import app.atomofiron.estimoji.model.User
 import app.atomofiron.estimoji.util.Util
 import app.atomofiron.estimoji.screen.base.BaseViewModel
 import app.atomofiron.estimoji.work.WebClientWorker
@@ -21,6 +22,7 @@ class PokerViewModel(app: Application) : BaseViewModel<PokerRouter>(app) {
     override val router = PokerRouter()
 
     val nickname = LateinitLiveData<String>()
+    val users = LateinitLiveData<List<User>>()
     val shareAddress = LateinitLiveData<String>()
     val showExitSnackbar = SingleLiveEvent<Unit>()
     val shareBitmap = MutableLiveData<Bitmap>()
@@ -31,7 +33,11 @@ class PokerViewModel(app: Application) : BaseViewModel<PokerRouter>(app) {
         PublicChannel.ipJoin.addObserver(onClearedCallback) {
             shareAddress.postValue(it)
             val size = app.applicationContext.resources.getDimensionPixelSize(R.dimen.share_view)
-            shareBitmap.postValue(Util.encodeAsBitmap(size, size, it))
+            val url = "http://${it}/estimoji.io"
+            shareBitmap.postValue(Util.encodeAsBitmap(size, size, url))
+        }
+        PublicChannel.users.addObserver(onClearedCallback) {
+            users.postValue(it)
         }
     }
 
@@ -58,7 +64,7 @@ class PokerViewModel(app: Application) : BaseViewModel<PokerRouter>(app) {
 
     fun onSettingsClick() {
         Util.isDarkTheme = !Util.isDarkTheme
-        router.reattachFragments()
+        // todo router.reattachFragments()
     }
 
     override fun onBackPressed(): Boolean {

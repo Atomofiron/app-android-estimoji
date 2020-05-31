@@ -16,5 +16,5 @@ class AuthRouter : BaseRouter() {
 
     fun startScanScreen() = startScreen(ScanFragment())
 
-    fun startCardsScreen() = startScreen(CardsFragment())
+    fun startCardsScreen() = startScreen(CardsFragment.create(allowOpenCard = true))
 }

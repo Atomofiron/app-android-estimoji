@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,12 +18,24 @@ import app.atomofiron.estimoji.recycler.NanoAdapter
 import app.atomofiron.estimoji.screen.base.BaseFragment
 import app.atomofiron.estimoji.screen.cards.recycler.CardsAdapter
 import app.atomofiron.estimoji.screen.cards.recycler.OnCardClickListener
+import app.atomofiron.estimoji.screen.poker.PokerFragment
 import app.atomofiron.estimoji.util.*
 import kotlin.reflect.KClass
+import kotlin.reflect.jvm.internal.impl.resolve.constants.BooleanValue
 
 class CardsFragment : BaseFragment<CardsViewModel>(), OnCardClickListener<String> {
     companion object {
         private const val ROW_COUNT = 3
+
+        const val KEY_ALLOW_OPEN_CARD = "KEY_ALLOW_OPEN_CARD"
+
+        fun create(allowOpenCard: Boolean): Fragment {
+            val bundle = Bundle()
+            bundle.putBoolean(KEY_ALLOW_OPEN_CARD, allowOpenCard)
+            val fragment = CardsFragment()
+            fragment.arguments = bundle
+            return fragment
+        }
     }
 
     override val viewModelClass: KClass<CardsViewModel> = CardsViewModel::class

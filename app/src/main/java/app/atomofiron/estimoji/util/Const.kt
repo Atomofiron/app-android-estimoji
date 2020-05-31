@@ -13,4 +13,7 @@ object Const {
     const val FOREGROUND_NOTIFICATION_CHANNEL_ID = "foreground_channel_id"
     const val FOREGROUND_NOTIFICATION_ID = 1984
     const val FOREGROUND_INTENT_REQUEST_CODE = 1337
+
+    const val UNKNOWN = -1
+    const val UNDEFINED = -1
 }

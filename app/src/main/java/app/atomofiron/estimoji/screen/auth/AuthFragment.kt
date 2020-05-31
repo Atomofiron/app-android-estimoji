@@ -49,7 +49,6 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
         ))
         etPassword.view.addTextChangedListener(TextWatcherImpl(
             afterTextChanged = { editable ->
-                setControlsVisibility(editable != null && editable.isNotEmpty())
                 viewModel.onPasswordInput(editable?.toString() ?: "")
             }
         ))
@@ -101,6 +100,16 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
         viewModel.buttonsEnabled.observe(owner, Observer {
             btnJoin {
                 isEnabled = it
+            }
+            btnCreate {
+                isEnabled = it
+            }
+        })
+        viewModel.ipJoin.observe(owner, Observer {
+            etJoin {
+                if (it.toString() != text.toString()) {
+                    setText(it)
+                }
             }
         })
     }

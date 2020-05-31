@@ -14,8 +14,10 @@ sealed class JsonClientFrame constructor(val type: String?) {
     }
 
     private class Unparsed : JsonClientFrame(null)
-    class Online : JsonClientFrame(
-        Types.ONLINE.type)
+    class Waking : JsonClientFrame(
+        Types.WAKING.type)
+    class Sleep : JsonClientFrame(
+        Types.SLEEP.type)
     class Chose(val chose: String) : JsonClientFrame(
         Types.CHOSE.type)
     class Leave() : JsonClientFrame(
@@ -29,7 +31,8 @@ sealed class JsonClientFrame constructor(val type: String?) {
     fun toJson(): String = gson.toJson(this)
 
     private enum class Types(val type: String, val kClass: KClass<out JsonClientFrame>) {
-        ONLINE("online", Online::class),
+        WAKING("waking", Waking::class),
+        SLEEP("sleep", Sleep::class),
         CHOSE("chose", Chose::class),
         LEAVE("leave", Leave::class),
     }

@@ -19,8 +19,10 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import app.atomofiron.estimoji.R
+import app.atomofiron.estimoji.model.User
 import app.atomofiron.estimoji.recycler.NanoAdapter
 import app.atomofiron.estimoji.screen.base.BaseFragment
+import app.atomofiron.estimoji.screen.poker.recycler.UsersAdapter
 import app.atomofiron.estimoji.util.CustomAppBarLayoutBehavior
 import app.atomofiron.estimoji.util.Knife
 import app.atomofiron.estimoji.util.OnToolbarCollapsedListener
@@ -56,6 +58,8 @@ class PokerFragment : BaseFragment<PokerViewModel>() {
     private val fabCards = Knife<FloatingActionButton>(this, R.id.poker_fab_cards)
     private val recyclerView = Knife<RecyclerView>(this, R.id.main_cv_recycler)
 
+    private val adapter = UsersAdapter()
+
     private val exitSnackbar: Snackbar by lazy(LazyThreadSafetyMode.NONE) {
         Snackbar.make(thisView, R.string.are_you_shure, Snackbar.LENGTH_SHORT)
             .setAnchorView(fabCards.view)
@@ -66,7 +70,7 @@ class PokerFragment : BaseFragment<PokerViewModel>() {
         super.onViewCreated(view, savedInstanceState)
 
         recyclerView.view.layoutManager = LinearLayoutManager(view.context)
-        recyclerView.view.adapter = NanoAdapter(R.layout.item_dude)
+        recyclerView.view.adapter = adapter
         fabCards.view.setOnClickListener { viewModel.onCardsClick() }
         fabShare.view.setOnClickListener { onShareClick() }
 
@@ -121,7 +125,10 @@ class PokerFragment : BaseFragment<PokerViewModel>() {
         viewModel.shareBitmap.observe(owner, Observer(ivShare.view::setImageBitmap))
         viewModel.shareAddress.observe(owner, Observer(tvShare.view::setText))
         viewModel.showExitSnackbar.observeEvent(owner, exitSnackbar::show)
+        viewModel.users.observe(owner, Observer(::setUsers))
     }
+
+    private fun setUsers(items: List<User>) = adapter.setItems(items)
 
     override fun onUnsubscribeData(owner: LifecycleOwner) {
         super.onUnsubscribeData(owner)

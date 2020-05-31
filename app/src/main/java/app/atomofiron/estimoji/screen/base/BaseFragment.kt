@@ -43,6 +43,7 @@ abstract class BaseFragment<M : BaseViewModel<*>> : Fragment(), Backable {
                               container: ViewGroup?,
                               savedInstanceState: Bundle?
     ): View? = LayoutInflater.from(context).inflate(layoutId, container, false)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         log("onViewCreated")
         super.onViewCreated(view, savedInstanceState)
