@@ -9,6 +9,7 @@ object Const {
 
     const val NICKNAME = "nickname"
     const val PASSWORD = "password"
+    const val CARD_PLACEHOLDER = "?"
 
     const val FOREGROUND_NOTIFICATION_CHANNEL_ID = "foreground_channel_id"
     const val FOREGROUND_NOTIFICATION_ID = 1984

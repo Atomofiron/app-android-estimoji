@@ -140,7 +140,7 @@ class KtorServerWorker(context: Context, workerParameters: WorkerParameters) : W
                         val users = clients.map { it.user }
                         clients.forEach { it.sendUsers(users) }
                     } else {
-                        clients.forEach { it.sendUserUpdate(user.copy(chose = "?")) }
+                        clients.forEach { it.sendUserUpdate(user.copy(chose = Const.CARD_PLACEHOLDER)) }
                     }
                 }
                 is JsonClientFrame.Leave -> {
@@ -159,7 +159,7 @@ class KtorServerWorker(context: Context, workerParameters: WorkerParameters) : W
             if (allVote) {
                 session.outgoing.send(Frame.Text(JsonServerFrame.Users(users).toJson()))
             } else {
-                val items = users.map { it.copy(chose = if (it.chose.isEmpty()) "" else "?") }
+                val items = users.map { it.copy(chose = it.getChosePlaceHolder()) }
                 session.outgoing.send(Frame.Text(JsonServerFrame.Users(items).toJson()))
             }
         }

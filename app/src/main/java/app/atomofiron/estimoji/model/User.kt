@@ -1,5 +1,7 @@
 package app.atomofiron.estimoji.model
 
+import app.atomofiron.estimoji.util.Const
+
 data class User(
     val nickname: String,
     val isAdmin: Boolean,
@@ -30,4 +32,6 @@ data class User(
         other.chose != chose -> false
         else -> true
     }
+
+    fun getChosePlaceHolder(): String = if (chose.isEmpty()) "" else Const.CARD_PLACEHOLDER
 }
