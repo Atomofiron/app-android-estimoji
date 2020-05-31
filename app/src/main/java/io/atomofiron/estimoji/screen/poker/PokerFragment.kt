@@ -28,12 +28,10 @@ import kotlin.reflect.KClass
 
 class PokerFragment : BaseFragment<PokerViewModel>() {
     companion object {
-        const val KEY_CONNECTION = "KEY_CONNECTION"
         const val KEY_NICKNAME = "KEY_NICKNAME"
 
-        fun create(nickname: String, connection: String = ""): Fragment {
+        fun create(nickname: String): Fragment {
             val bundle = Bundle()
-            bundle.putString(KEY_CONNECTION, connection)
             bundle.putString(KEY_NICKNAME, nickname)
             val fragment = PokerFragment()
             fragment.arguments = bundle

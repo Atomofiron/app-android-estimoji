@@ -7,8 +7,8 @@ import io.atomofiron.estimoji.screen.scan.ScanFragment
 
 class AuthRouter : BaseRouter() {
 
-    fun startPokerScreen(nickname: String, connection: String = "") {
-        val pokerFragment = PokerFragment.create(nickname, connection)
+    fun startPokerScreen(nickname: String) {
+        val pokerFragment = PokerFragment.create(nickname)
         startScreen(CardsFragment(), pokerFragment) {
             switchScreen(addToBackStack = false) { it is PokerFragment }
         }

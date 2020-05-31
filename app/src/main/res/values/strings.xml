@@ -22,4 +22,9 @@
     <string name="menu_add">Add</string>
     <string name="menu_confirm">Confirm</string>
     <string name="menu_cancel">Cancel</string>
+    <string name="hint_password">Password</string>
+    <string name="wrong_password">Wrong password!</string>
+    <string name="wrong_password2">aaaa</string>
+    <string name="wrong_password3">aaaa</string>
+    <string name="fuckng_wronj_password">Wrong password!</string>
 </resources>

@@ -5,9 +5,18 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import androidx.lifecycle.MutableLiveData
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import io.atomofiron.estimoji.App
 import io.atomofiron.estimoji.R
+import io.atomofiron.estimoji.injactable.interactor.AuthInteractor
+import io.atomofiron.estimoji.logD
 import io.atomofiron.estimoji.util.Util
 import io.atomofiron.estimoji.screen.base.BaseViewModel
+import io.atomofiron.estimoji.work.WebClientWorker
+import io.atomofiron.estimoji.work.KtorServerWorker
+import java.util.concurrent.TimeUnit
 
 class PokerViewModel(app: Application) : BaseViewModel<PokerRouter>(app) {
     override val router = PokerRouter()
@@ -19,12 +28,10 @@ class PokerViewModel(app: Application) : BaseViewModel<PokerRouter>(app) {
     override fun onCreate(context: Context, intent: Intent) {
         super.onCreate(context, intent)
 
-        nickname.value = intent.getStringExtra(PokerFragment.KEY_NICKNAME)
-        val connection = intent.getStringExtra(PokerFragment.KEY_CONNECTION)
-        // todo connection
-
         val size = context.resources.getDimensionPixelSize(R.dimen.share_view)
         shareBitmap.value = Util.encodeAsBitmap(size, size, shareAddress.value!!)
+
+        nickname.value = intent.getStringExtra(PokerFragment.KEY_NICKNAME)
     }
 
     override fun onViewDestroy() {

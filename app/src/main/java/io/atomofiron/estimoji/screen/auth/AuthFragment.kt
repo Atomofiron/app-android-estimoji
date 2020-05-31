@@ -25,6 +25,7 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
 
     private val toolbar = Knife<Toolbar>(this, R.id.auth_toolbar)
     private val etNickname = Knife<EditText>(this, R.id.auth_et_nickname)
+    private val etPassword = Knife<EditText>(this, R.id.auth_et_password)
     private val btnCreate = Knife<Button>(this, R.id.auth_btn_create)
     private val flJoin = Knife<FrameLayout>(this, R.id.auth_fl_join)
     private val btnJoin = Knife<Button>(this, R.id.auth_btn_join)
@@ -34,6 +35,7 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
     private val fabCards = Knife<FloatingActionButton>(this, R.id.auth_fab_cards)
 
     private val nickname: String get() = etNickname.view.text.toString()
+    private val password: String get() = etPassword.view.text.toString()
     private val joinAddressWatcher = JoinAddressWatcher()
     private val joinAddress: String? get() = joinAddressWatcher.value
 
@@ -47,6 +49,12 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
                 viewModel.onNicknameInput(editable?.toString() ?: "")
             }
         ))
+        etPassword.view.addTextChangedListener(TextWatcherImpl(
+            afterTextChanged = { editable ->
+                setControlsVisibility(editable != null && editable.isNotEmpty())
+                viewModel.onPasswordInput(editable?.toString() ?: "")
+            }
+        ))
         btnCreate.view.setOnClickListener {
             if (nickname.isEmpty()) return@setOnClickListener
             etNickname.view.hideKeyboard()
@@ -57,7 +65,7 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
             viewModel.onScanClick()
         }
         etJoin.view.addTextChangedListener(joinAddressWatcher)
-        etJoin.view.setOnClickListener {
+        btnJoin.view.setOnClickListener {
             if (nickname.isEmpty()) return@setOnClickListener
             if (joinAddress == null) return@setOnClickListener
             etNickname.view.hideKeyboard()
@@ -80,14 +88,14 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
 
         viewModel.nickname.observe(owner, Observer {
             etNickname {
-                if (it != null && it.toString() != text.toString()) {
+                if (it.toString() != text.toString()) {
                     setText(it)
                 }
             }
         })
-        viewModel.ipJoin.observe(owner, Observer {
-            etJoin {
-                if (it != text.toString()) {
+        viewModel.password.observe(owner, Observer {
+            etPassword {
+                if (it.toString() != text.toString()) {
                     setText(it)
                 }
             }

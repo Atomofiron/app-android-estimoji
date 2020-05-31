@@ -30,6 +30,17 @@
         android:imeOptions="actionDone"
         android:maxLines="1"
         />
+    <EditText
+        android:id="@+id/auth_et_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="@dimen/content_width"
+        android:hint="@string/hint_password"
+        android:gravity="center_horizontal"
+        android:inputType="textPassword"
+        android:imeOptions="actionDone"
+        android:maxLines="1"
+        />
     <Button
         android:id="@+id/auth_btn_create"
         android:layout_width="@dimen/content_width"
@@ -79,6 +90,7 @@
         android:orientation="horizontal"
         android:gravity="center_horizontal|bottom"
         android:layout_marginTop="8dp"
+        android:clipToPadding="false"
         android:visibility="gone"
         tools:visibility="visible"
         >
@@ -89,10 +101,11 @@
             android:minWidth="@dimen/content_width_without_button"
             android:hint="@string/host_ip"
             android:gravity="center_horizontal"
-            android:digits="0123456789."
-            android:inputType="number"
+            android:digits="0123456789.:"
+            android:inputType="textUri"
             android:imeOptions="actionDone"
             android:singleLine="true"
+            android:text="192.168.0.111:7777"
             /><!-- digits breaks maxLines -->
         <ImageButton
             android:id="@+id/auth_ib_qr"

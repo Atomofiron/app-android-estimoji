@@ -89,7 +89,6 @@ abstract class BaseRouter {
             }
             isBlocked = true
             val current = this.fragments.find { !it.isHidden }
-            logD("startScreen current ${current?.javaClass?.simpleName}")
             beginTransaction().apply {
                 setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 if (current != null) {

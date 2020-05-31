@@ -10,7 +10,7 @@ private const val delay = false
 
 fun Any.sleep(t: Long) = if (delay) Thread.sleep(t) else Unit
 
-fun Any.log(s: String) = logE(s)
+fun Any.log(s: String) = Unit//logD(s)
 
 fun Any.logE(s: String) {
     Log.e("regextool", "[ERROR] [${this.javaClass.simpleName}] $s")
