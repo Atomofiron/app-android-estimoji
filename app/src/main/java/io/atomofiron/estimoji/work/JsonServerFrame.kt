@@ -14,21 +14,21 @@ sealed class JsonServerFrame constructor(val type: String?) {
     }
 
     private class Unparsed : JsonServerFrame(null)
-    class Forbidden : JsonServerFrame(Types.FORBIDDEN.value)
-    class Authorized : JsonServerFrame(Types.AUTHORIZED.value)
-    class Users : JsonServerFrame(Types.USERS.value)
-    class UserJoin : JsonServerFrame(Types.USER_JOIN.value)
-    class UserUpdate : JsonServerFrame(Types.USERS_UPDATE.value)
-    class UserLeave : JsonServerFrame(Types.USERS_LEAVE.value)
+    class Forbidden : JsonServerFrame(Types.FORBIDDEN.type)
+    class Authorized : JsonServerFrame(Types.AUTHORIZED.type)
+    class Users : JsonServerFrame(Types.USERS.type)
+    class UserJoin : JsonServerFrame(Types.USER_JOIN.type)
+    class UserUpdate : JsonServerFrame(Types.USERS_UPDATE.type)
+    class UserLeave(val nickname: String) : JsonServerFrame(Types.USERS_LEAVE.type)
 
     fun define(frame: String): JsonServerFrame {
-        val enumType = Types.values().find { it.value == type }!!
+        val enumType = Types.values().find { it.type == type }!!
         return gson.fromJson(frame, enumType.kClass.java)
     }
 
     fun toJson(): String = gson.toJson(this)
 
-    private enum class Types(val value: String, val kClass: KClass<out JsonServerFrame>) {
+    private enum class Types(val type: String, val kClass: KClass<out JsonServerFrame>) {
         FORBIDDEN("forbidden", Forbidden::class),
         AUTHORIZED("authorized", Authorized::class),
         USERS("users", Users::class),

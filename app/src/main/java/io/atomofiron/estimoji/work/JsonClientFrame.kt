@@ -14,18 +14,20 @@ sealed class JsonClientFrame constructor(val type: String?) {
     }
 
     private class Unparsed : JsonClientFrame(null)
-    class Online : JsonClientFrame(Types.ONLINE.value)
-    class Chose(val chose: String) : JsonClientFrame(Types.CHOSE.value)
+    class Online : JsonClientFrame(Types.ONLINE.type)
+    class Chose(val chose: String) : JsonClientFrame(Types.CHOSE.type)
+    class Leave() : JsonClientFrame(Types.LEAVE.type)
 
     fun define(frame: String): JsonClientFrame {
-        val enumType = Types.values().find { it.value == type }!!
+        val enumType = Types.values().find { it.type == type }!!
         return gson.fromJson(frame, enumType.kClass.java)
     }
 
     fun toJson(): String = gson.toJson(this)
 
-    private enum class Types(val value: String, val kClass: KClass<out JsonClientFrame>) {
+    private enum class Types(val type: String, val kClass: KClass<out JsonClientFrame>) {
         ONLINE("online", Online::class),
         CHOSE("chose", Chose::class),
+        LEAVE("leave", Leave::class),
     }
 }
