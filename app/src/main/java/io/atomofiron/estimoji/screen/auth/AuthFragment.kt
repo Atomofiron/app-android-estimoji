@@ -5,13 +5,11 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import androidx.transition.TransitionManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import io.atomofiron.estimoji.R
 import io.atomofiron.estimoji.screen.base.BaseFragment
@@ -100,10 +98,15 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
                 }
             }
         })
+        viewModel.buttonsEnabled.observe(owner, Observer {
+            btnJoin {
+                isEnabled = it
+            }
+        })
     }
 
     private fun setControlsVisibility(visible: Boolean) {
-        TransitionManager.beginDelayedTransition(view as ViewGroup)
+        //TransitionManager.beginDelayedTransition(view as ViewGroup)
         val visibility = if (visible) View.VISIBLE else View.GONE
         btnCreate.view.visibility = visibility
         flJoin.view.visibility = visibility
@@ -111,7 +114,7 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
     }
 
     private fun setJoinButtonVisibility(visible: Boolean) {
-        TransitionManager.beginDelayedTransition(view as ViewGroup)
+        //TransitionManager.beginDelayedTransition(view as ViewGroup)
         val visibility = if (visible) View.VISIBLE else View.INVISIBLE
         btnJoin.view.visibility = visibility
         btnJoin.view.isEnabled = visible

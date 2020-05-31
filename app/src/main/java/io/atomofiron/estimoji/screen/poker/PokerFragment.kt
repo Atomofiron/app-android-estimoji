@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import io.atomofiron.estimoji.R
 import io.atomofiron.estimoji.recycler.NanoAdapter
 import io.atomofiron.estimoji.screen.base.BaseFragment
@@ -54,6 +55,12 @@ class PokerFragment : BaseFragment<PokerViewModel>() {
     private val fabShare = Knife<FloatingActionButton>(this, R.id.poker_fab_share)
     private val fabCards = Knife<FloatingActionButton>(this, R.id.poker_fab_cards)
     private val recyclerView = Knife<RecyclerView>(this, R.id.main_cv_recycler)
+
+    private val exitSnackbar: Snackbar by lazy(LazyThreadSafetyMode.NONE) {
+        Snackbar.make(thisView, R.string.are_you_shure, Snackbar.LENGTH_SHORT)
+            .setAnchorView(fabCards.view)
+            .setAction(R.string.leave) { viewModel.onExitClick() }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -113,6 +120,7 @@ class PokerFragment : BaseFragment<PokerViewModel>() {
         viewModel.nickname.observe(owner, Observer(toolbar.view::setTitle))
         viewModel.shareBitmap.observe(owner, Observer(ivShare.view::setImageBitmap))
         viewModel.shareAddress.observe(owner, Observer(tvShare.view::setText))
+        viewModel.showExitSnackbar.observeEvent(owner, exitSnackbar::show)
     }
 
     override fun onUnsubscribeData(owner: LifecycleOwner) {
@@ -128,4 +136,6 @@ class PokerFragment : BaseFragment<PokerViewModel>() {
         }
         return super.onOptionsItemSelected(item)
     }
+
+    override fun onBack(): Boolean = viewModel.onBackPressed()
 }

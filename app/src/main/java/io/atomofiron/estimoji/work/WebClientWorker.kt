@@ -1,13 +1,18 @@
 package io.atomofiron.estimoji.work
 
 import android.content.Context
+import android.content.Intent
+import android.net.wifi.WifiManager
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import app.atomofiron.common.util.ServiceConnectionImpl
+import io.atomofiron.estimoji.android.ForegroundService
+import io.atomofiron.estimoji.injactable.channel.PublicChannel
 import io.atomofiron.estimoji.logD
 import io.atomofiron.estimoji.logE
-import io.atomofiron.estimoji.logI
+import io.atomofiron.estimoji.model.JsonServerFrame
 import io.atomofiron.estimoji.util.Const
 import io.ktor.client.HttpClient
 import io.ktor.client.features.websocket.DefaultClientWebSocketSession
@@ -15,11 +20,17 @@ import io.ktor.client.features.websocket.WebSockets
 import io.ktor.client.features.websocket.ws
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.http.HttpMethod
-import io.ktor.http.cio.websocket.*
+import io.ktor.http.cio.websocket.CloseReason
+import io.ktor.http.cio.websocket.Frame
+import io.ktor.http.cio.websocket.close
+import io.ktor.http.cio.websocket.readText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.math.BigInteger
+import java.net.Inet4Address
+import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 
 class WebClientWorker(context: Context, workerParameters: WorkerParameters) : Worker(context, workerParameters) {
@@ -46,6 +57,8 @@ class WebClientWorker(context: Context, workerParameters: WorkerParameters) : Wo
         }
     }
 
+    private val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+
     private val nickname = workerParameters.inputData.getString(KEY_NICKNAME)!!
     private val password = workerParameters.inputData.getString(KEY_PASSWORD)!!
     private val ipJoin = workerParameters.inputData.getString(KEY_IP_JOIN) ?: Const.LOCAL_HOST + ":" + Const.PORT
@@ -56,6 +69,8 @@ class WebClientWorker(context: Context, workerParameters: WorkerParameters) : Wo
     private var result = Result.success()
     private val isActive: Boolean get() = (session?.isActive == true) && result is Result.Success
 
+    val connection = ServiceConnectionImpl()
+
     override fun onStopped() {
         super.onStopped()
         logD("onStopped")
@@ -64,6 +79,13 @@ class WebClientWorker(context: Context, workerParameters: WorkerParameters) : Wo
         }
     }
 
+    private fun startForegroundService() {
+        val intent = Intent(applicationContext, ForegroundService::class.java)
+        applicationContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+    }
+
+    private fun stopForegroundService() = applicationContext.unbindService(connection)
+
     override fun doWork(): Result {
         logD("doWork")
         client = HttpClient {
@@ -71,9 +93,13 @@ class WebClientWorker(context: Context, workerParameters: WorkerParameters) : Wo
         }
         GlobalScope.launch(block = ::connect)
 
+        startForegroundService()
+
         while (!isStopped && isActive) {
             Thread.sleep(Const.CLIENT_SLEEP_PERIOD)
         }
+
+        stopForegroundService()
 
         logD("doWork end")
         return result
@@ -83,6 +109,19 @@ class WebClientWorker(context: Context, workerParameters: WorkerParameters) : Wo
         try {
             client.ws(::requestBuilder) {
                 session = this
+                val loopbackAddress = Inet4Address.getLocalHost().hostAddress
+                val shareIpJoin = when {
+                    ipJoin.startsWith(loopbackAddress) -> {
+                        val hostPort = ipJoin.split(Const.PORT_SEPARATOR)
+                        val port = hostPort[1].toInt()
+                        val ipAddress = wifiManager.connectionInfo.ipAddress.toLong()
+                        val array = BigInteger.valueOf(ipAddress).toByteArray()
+                        array.reverse()
+                        Inet4Address.getByAddress(array).hostAddress + Const.PORT_SEPARATOR + port
+                    }
+                    else -> ipJoin
+                }
+                PublicChannel.ipJoin.setAndNotify(shareIpJoin)
 
                 for (frame in incoming) when (frame) {
                     is Frame.Text -> onMessage(frame.readText())

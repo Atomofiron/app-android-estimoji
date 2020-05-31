@@ -8,8 +8,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import app.atomofiron.common.util.LateinitLiveData
+import app.atomofiron.common.util.SingleLiveEvent
 import io.atomofiron.estimoji.App
 import io.atomofiron.estimoji.R
+import io.atomofiron.estimoji.injactable.channel.PublicChannel
 import io.atomofiron.estimoji.injactable.interactor.AuthInteractor
 import io.atomofiron.estimoji.logD
 import io.atomofiron.estimoji.util.Util
@@ -21,17 +24,32 @@ import java.util.concurrent.TimeUnit
 class PokerViewModel(app: Application) : BaseViewModel<PokerRouter>(app) {
     override val router = PokerRouter()
 
-    val nickname = MutableLiveData("Ярослав")
-    val shareAddress = MutableLiveData("http://192.168.0.0:777/estimoji.io")
+    val nickname = LateinitLiveData<String>()
+    val shareAddress = LateinitLiveData<String>()
+    val showExitSnackbar = SingleLiveEvent<Unit>()
     val shareBitmap = MutableLiveData<Bitmap>()
+
+    private val workManager = WorkManager.getInstance(App.appContext)
+
+    init {
+        PublicChannel.ipJoin.addObserver(onClearedCallback) {
+            shareAddress.postValue(it)
+            val size = app.applicationContext.resources.getDimensionPixelSize(R.dimen.share_view)
+            shareBitmap.postValue(Util.encodeAsBitmap(size, size, it))
+        }
+    }
 
     override fun onCreate(context: Context, intent: Intent) {
         super.onCreate(context, intent)
 
-        val size = context.resources.getDimensionPixelSize(R.dimen.share_view)
-        shareBitmap.value = Util.encodeAsBitmap(size, size, shareAddress.value!!)
+        nickname.value = intent.getStringExtra(PokerFragment.KEY_NICKNAME)!!
+    }
 
-        nickname.value = intent.getStringExtra(PokerFragment.KEY_NICKNAME)
+    override fun onCleared() {
+        super.onCleared()
+        logD("onCleared")
+        workManager.cancelUniqueWork(WebClientWorker.NAME)
+        workManager.cancelUniqueWork(KtorServerWorker.NAME)
     }
 
     override fun onViewDestroy() {
@@ -50,5 +68,10 @@ class PokerViewModel(app: Application) : BaseViewModel<PokerRouter>(app) {
     fun onSettingsClick() {
         Util.isDarkTheme = !Util.isDarkTheme
         router.reattachFragments()
+    }
+
+    override fun onBackPressed(): Boolean {
+        showExitSnackbar.invoke()
+        return true
     }
 }

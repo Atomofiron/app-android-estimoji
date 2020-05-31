@@ -1,4 +1,4 @@
-package io.atomofiron.estimoji.work
+package io.atomofiron.estimoji.model
 
 import com.google.gson.Gson
 import kotlin.reflect.KClass
@@ -14,12 +14,17 @@ sealed class JsonServerFrame constructor(val type: String?) {
     }
 
     private class Unparsed : JsonServerFrame(null)
-    class Forbidden : JsonServerFrame(Types.FORBIDDEN.type)
-    class Authorized : JsonServerFrame(Types.AUTHORIZED.type)
-    class Users : JsonServerFrame(Types.USERS.type)
-    class UserJoin : JsonServerFrame(Types.USER_JOIN.type)
-    class UserUpdate : JsonServerFrame(Types.USERS_UPDATE.type)
-    class UserLeave(val nickname: String) : JsonServerFrame(Types.USERS_LEAVE.type)
+    class Forbidden : JsonServerFrame(
+        Types.FORBIDDEN.type)
+    class Authorized : JsonServerFrame(
+        Types.AUTHORIZED.type)
+    class Users(val users: List<User>) : JsonServerFrame(Types.USERS.type)
+    class UserJoin(val user: User) : JsonServerFrame(
+        Types.USER_JOIN.type)
+    class UserUpdate(val user: User) : JsonServerFrame(
+        Types.USERS_UPDATE.type)
+    class UserLeave(val nickname: String) : JsonServerFrame(
+        Types.USERS_LEAVE.type)
 
     fun define(frame: String): JsonServerFrame {
         val enumType = Types.values().find { it.type == type }!!

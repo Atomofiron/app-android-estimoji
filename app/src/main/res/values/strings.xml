@@ -27,4 +27,8 @@
     <string name="wrong_password2">aaaa</string>
     <string name="wrong_password3">aaaa</string>
     <string name="fuckng_wronj_password">Wrong password!</string>
+    <string name="are_you_shure">Are you sure?</string>
+    <string name="leave">Leave</string>
+    <string name="foreground_notification_name">Poker Session</string>
+    <string name="session_is_active">Session is active</string>
 </resources>

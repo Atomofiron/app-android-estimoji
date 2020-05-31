@@ -62,4 +62,9 @@ class RootViewModel(app: Application) : BaseViewModel<RootRouter>(app) {
         provider!!.get(AuthViewModel::class.java).onIpInput(ip)
         router.resetToAuthScreen()
     }
+
+    override fun onBackPressed(): Boolean = when {
+        router.onBack() -> true
+        else -> super.onBackPressed()
+    }
 }

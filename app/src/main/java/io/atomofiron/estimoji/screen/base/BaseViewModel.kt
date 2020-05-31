@@ -8,24 +8,23 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import app.atomofiron.common.util.KObservable
 import io.atomofiron.estimoji.log
-import java.lang.ref.WeakReference
 
 abstract class BaseViewModel<R : BaseRouter>(app: Application) : AndroidViewModel(app) {
     protected abstract val router: R
     protected var provider: ViewModelProvider? = null
+    protected val onClearedCallback = KObservable.RemoveObserverCallback()
 
     open fun onFragmentAttach(fragment: Fragment) {
         router.onFragmentAttach(fragment)
-        provider = ViewModelProviders.of(fragment.activity!!)
+        provider = ViewModelProvider(fragment.activity!!)
     }
 
     open fun onActivityAttach(activity: Activity) {
         router.onActivityAttach(activity as AppCompatActivity)
-        provider = ViewModelProviders.of(activity)
+        provider = ViewModelProvider(activity)
     }
 
     fun onCreate(context: Context, arguments: Bundle?) {
@@ -43,5 +42,8 @@ abstract class BaseViewModel<R : BaseRouter>(app: Application) : AndroidViewMode
 
     override fun onCleared() {
         provider = null
+        onClearedCallback.invoke()
     }
+
+    open fun onBackPressed(): Boolean = false
 }

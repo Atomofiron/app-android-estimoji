@@ -1,5 +1,6 @@
 package io.atomofiron.estimoji.screen.base
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,13 +10,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
+import app.atomofiron.common.arch.view.Backable
 import io.atomofiron.estimoji.R
 import io.atomofiron.estimoji.log
 import io.atomofiron.estimoji.util.findBooleanByAttr
 import kotlin.reflect.KClass
 
-abstract class BaseFragment<M : BaseViewModel<*>> : Fragment() {
+abstract class BaseFragment<M : BaseViewModel<*>> : Fragment(), Backable {
     protected abstract val viewModelClass: KClass<M>
     protected lateinit var viewModel: M
     protected val dataProvider: M get() = viewModel
@@ -24,10 +26,15 @@ abstract class BaseFragment<M : BaseViewModel<*>> : Fragment() {
     protected open val systemBarsColorId: Int = R.color.transparent
     protected open val systemBarsLights: Boolean get() = !context!!.findBooleanByAttr(R.attr.isDarkTheme)
 
+    val thisContext: Context get() = requireContext()
+    val thisActivity: AppCompatActivity get() = requireActivity() as AppCompatActivity
+    val thisView: View get() = requireView()
+    val thisArguments: Bundle get() = requireArguments()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         log("onCreate")
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProviders.of(activity!!).get(viewModelClass.java)
+        viewModel = ViewModelProvider(activity!!).get(viewModelClass.java)
         viewModel.onFragmentAttach(this)
         viewModel.onCreate(context!!, arguments)
     }
@@ -40,7 +47,7 @@ abstract class BaseFragment<M : BaseViewModel<*>> : Fragment() {
         log("onViewCreated")
         super.onViewCreated(view, savedInstanceState)
         viewModel.onShow()
-        onSubscribeData(this)
+        onSubscribeData(viewLifecycleOwner)
     }
 
     override fun onStart() {

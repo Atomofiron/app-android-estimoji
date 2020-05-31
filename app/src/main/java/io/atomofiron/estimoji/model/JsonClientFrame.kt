@@ -1,4 +1,4 @@
-package io.atomofiron.estimoji.work
+package io.atomofiron.estimoji.model
 
 import com.google.gson.Gson
 import kotlin.reflect.KClass
@@ -14,9 +14,12 @@ sealed class JsonClientFrame constructor(val type: String?) {
     }
 
     private class Unparsed : JsonClientFrame(null)
-    class Online : JsonClientFrame(Types.ONLINE.type)
-    class Chose(val chose: String) : JsonClientFrame(Types.CHOSE.type)
-    class Leave() : JsonClientFrame(Types.LEAVE.type)
+    class Online : JsonClientFrame(
+        Types.ONLINE.type)
+    class Chose(val chose: String) : JsonClientFrame(
+        Types.CHOSE.type)
+    class Leave() : JsonClientFrame(
+        Types.LEAVE.type)
 
     fun define(frame: String): JsonClientFrame {
         val enumType = Types.values().find { it.type == type }!!

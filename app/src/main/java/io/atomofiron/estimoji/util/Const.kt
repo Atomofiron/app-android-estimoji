@@ -9,4 +9,8 @@ object Const {
 
     const val NICKNAME = "nickname"
     const val PASSWORD = "password"
+
+    const val FOREGROUND_NOTIFICATION_CHANNEL_ID = "foreground_channel_id"
+    const val FOREGROUND_NOTIFICATION_ID = 1984
+    const val FOREGROUND_INTENT_REQUEST_CODE = 1337
 }
