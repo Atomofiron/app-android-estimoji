@@ -1,21 +1,24 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply from: '../appmetrica.gradle'
 
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
     defaultConfig {
-        applicationId "io.atomofiron.estimoji"
+        applicationId "app.atomofiron.estimoji"
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
     }
     buildTypes {
+        debug {
+            buildConfigField "String", "YANDEX_API_KEY", "\"${project.ext.API_KEY}\""
+        }
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "YANDEX_API_KEY", "\"${project.ext.API_KEY}\""
         }
     }
     packagingOptions {

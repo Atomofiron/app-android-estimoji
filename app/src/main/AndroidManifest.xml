@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution"
     xmlns:tools="http://schemas.android.com/tools"
-    package="io.atomofiron.estimoji">
+    package="app.atomofiron.estimoji">
 
     <dist:module dist:instant="true" />
 

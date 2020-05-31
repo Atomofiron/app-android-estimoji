@@ -4,7 +4,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import io.atomofiron.estimoji.logI
+import app.atomofiron.estimoji.logI
 
 class SingleLiveEvent<T> : LifecycleEventObserver {
     private var listener: (() -> Unit)? = null
