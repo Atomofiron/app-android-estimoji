@@ -15,10 +15,10 @@ android {
     }
     buildTypes {
         debug {
-            buildConfigField "String", "YANDEX_API_KEY", "\"${project.ext.API_KEY}\""
+            buildConfigField "String", "YANDEX_API_KEY", "\"${yandexApiKey}\""
         }
         release {
-            buildConfigField "String", "YANDEX_API_KEY", "\"${project.ext.API_KEY}\""
+            buildConfigField "String", "YANDEX_API_KEY", "\"${yandexApiKey}\""
         }
     }
     packagingOptions {
